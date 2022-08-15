@@ -11,3 +11,6 @@ go.*
 .DS_Store
 *.txt
 *.log
+
+# ignore windows executables
+*.exe
