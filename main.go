@@ -21,7 +21,7 @@ import (
 )
 
 type FlagOptions struct {
-	upn string
+	upn      string
 	password string
 	ntlm     string
 	dc       string
@@ -47,7 +47,7 @@ func options() *FlagOptions {
 
 	flag.Parse()
 	return &FlagOptions{
-		upn: *upn,
+		upn:      *upn,
 		password: *password,
 		ntlm:     *ntlm,
 		dc:       *dc,
@@ -77,18 +77,18 @@ func main() {
 	var err error
 	var domain string
 	var username string
-        var target []string	
+	var target []string
 
 	target = strings.Split(opt.upn, "@")
 
 	// Did the user supply the username correctly <user@domain>?
 	if len(target) == 1 {
-	    opt.help = true	
-	}else {
-	    username = target[0]
-	    domain = target[1]
+		opt.help = true
+	} else {
+		username = target[0]
+		domain = target[1]
 	}
-	
+
 	// if required flags aren't set, print help
 	if username == "" || opt.dc == "" || (opt.password == "" && opt.ntlm == "") || opt.help {
 		flag.Usage()
@@ -163,7 +163,7 @@ func main() {
 
 	// if password option set
 	if opt.password != "" {
-		err = conn.Bind(opt.upn, opt.password) 
+		err = conn.Bind(opt.upn, opt.password)
 		if err != nil {
 			log.Fatal(err)
 		} else {
@@ -173,7 +173,7 @@ func main() {
 
 	// if ntlm hash option set
 	if opt.ntlm != "" {
-		err = conn.NTLMBindWithHash(domain, username, opt.ntlm) 
+		err = conn.NTLMBindWithHash(domain, username, opt.ntlm)
 		if err != nil {
 			fmt.Print("test\n")
 			log.Fatal(err)
@@ -188,9 +188,9 @@ func main() {
 
 	for { //Loop forever
 		fmt.Print("\n> ")
-		userQuery, err := reader.ReadString('\n')       //Read user input
-		userQuery = strings.TrimSuffix(userQuery, "\n") //Remove newline
-		if err != nil {                                 //Check for errors
+		userQuery, err := reader.ReadString('\n')         //Read user input
+		userQuery = strings.TrimSuffix(userQuery, "\r\n") //Remove newline
+		if err != nil {                                   //Check for errors
 			fmt.Fprintln(os.Stderr, err)
 		}
 
@@ -348,7 +348,9 @@ func main() {
 			case "passpol":
 				result := Queries.GetPwdPolicy(baseDN, conn)
 				Globals.OutputAndLog(opt.logFile, result, 0, 8, 0, false)
-
+			case "shadow":
+				result := Commands.ReadShadowCreds(baseDN, conn)
+				Globals.OutputAndLog(opt.logFile, result, 0, 8, 0, false)
 			default:
 				fmt.Println("Invalid command. Use command, \"help\" for available options.")
 			} // end 'module' switch
