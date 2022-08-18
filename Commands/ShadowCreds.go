@@ -106,8 +106,13 @@ func fromDNWithBinary(dNWithBinary *DNWithBinary) string {
 		// testing GUID
 		if e.entryType == 6 {
 			fmt.Printf("devide id data: %x\n", e.data)
-			deviceid, _ := uuid.FromBytes(e.data)
-			fmt.Printf("The device ID is %s\n", deviceid.String())
+			reader := bytes.NewReader(e.data)
+			a := make([]byte, 4)
+			err = binary.Read(reader, binary.BigEndian, a)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("The device ID is %d\n", a)
 		}
 
 	}
