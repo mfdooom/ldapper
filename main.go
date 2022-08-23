@@ -21,9 +21,10 @@ import (
 )
 
 type FlagOptions struct {
-	upn string
+	upn      string
 	password string
 	ntlm     string
+	kerberos bool
 	dc       string
 	scheme   bool
 	logFile  string
@@ -37,6 +38,7 @@ func options() *FlagOptions {
 	upn := flag.String("u", "", "Username (username@domain)")
 	password := flag.String("p", "", "Password")
 	ntlm := flag.String("H", "", "Use NTLM authentication")
+	kerberos := flag.Bool("k", false, "Use kerberos authentication")
 	dc := flag.String("dc", "", "IP address or FQDN of target DC")
 	scheme := flag.Bool("s", false, "Bind using LDAPS")
 	logFile := flag.String("o", "", "Log file")
@@ -47,9 +49,10 @@ func options() *FlagOptions {
 
 	flag.Parse()
 	return &FlagOptions{
-		upn: *upn,
+		upn:      *upn,
 		password: *password,
 		ntlm:     *ntlm,
+		kerberos: *kerberos,
 		dc:       *dc,
 		scheme:   *scheme,
 		logFile:  *logFile,
@@ -77,18 +80,21 @@ func main() {
 	var err error
 	var domain string
 	var username string
-        var target []string	
+	var target []string
 
+	if opt.kerberos {
+		Globals.KerberosAuthentication()
+	}
 	target = strings.Split(opt.upn, "@")
 
 	// Did the user supply the username correctly <user@domain>?
 	if len(target) == 1 {
-	    opt.help = true	
-	}else {
-	    username = target[0]
-	    domain = target[1]
+		opt.help = true
+	} else {
+		username = target[0]
+		domain = target[1]
 	}
-	
+
 	// if required flags aren't set, print help
 	if username == "" || opt.dc == "" || (opt.password == "" && opt.ntlm == "") || opt.help {
 		flag.Usage()
@@ -163,7 +169,7 @@ func main() {
 
 	// if password option set
 	if opt.password != "" {
-		err = conn.Bind(opt.upn, opt.password) 
+		err = conn.Bind(opt.upn, opt.password)
 		if err != nil {
 			log.Fatal(err)
 		} else {
@@ -173,7 +179,7 @@ func main() {
 
 	// if ntlm hash option set
 	if opt.ntlm != "" {
-		err = conn.NTLMBindWithHash(domain, username, opt.ntlm) 
+		err = conn.NTLMBindWithHash(domain, username, opt.ntlm)
 		if err != nil {
 			fmt.Print("test\n")
 			log.Fatal(err)

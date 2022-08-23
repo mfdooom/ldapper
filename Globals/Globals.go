@@ -12,6 +12,29 @@ import (
 	"time"
 
 	"github.com/go-ldap/ldap/v3"
+	"github.com/jcmturner/gokrb5/v8/client"
+	"github.com/jcmturner/gokrb5/v8/config"
+	"github.com/jcmturner/gokrb5/v8/credentials"
+)
+
+const (
+	libdefault = `[libdefaults]
+	default_realm = %s
+	dns_lookup_realm = false
+	dns_lookup_kdc = false
+	ticket_lifetime = 24h
+	renew_lifetime = 5
+	forwardable = yes
+	proxiable = true
+	default_tkt_enctypes = rc4-hmac
+	default_tgs_enctypes = rc4-hmac
+	noaddresses = true
+	udp_preference_limit=1
+	[realms]
+	%s = {
+		kdc = %s:88
+		default_domain = %s
+		    }`
 )
 
 func LdapSearch(baseDN string, query string) *ldap.SearchRequest {
@@ -105,4 +128,18 @@ func GetArrayDifference(a, b []string) (diff []string) {
 	}
 
 	return
+}
+
+func KerberosAuthentication() {
+
+	c, err := config.NewFromString(fmt.Sprintf(libdefault, "RANGE.COM", "RANGE.COM", "192.168.168.132", "RANGE.COM"))
+
+	if err != nil {
+		fmt.Printf("Error Loading Config: %v\n", err)
+	}
+
+	ccache, _ := credentials.LoadCCache("/root/dev/bobby.ccache")
+	cl, _ := client.NewFromCCache(ccache, c)
+	cl.Login()
+	cl.GetServiceTicket("ldap/DC1.RANGE.COM")
 }
