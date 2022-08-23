@@ -4,13 +4,10 @@
 !*.*
 
 # ignore any vscode or GoLang generated file
-go.*
+go.sum
 .vscode/
 
 # ignore random MacOs and text/log files
 .DS_Store
 *.txt
 *.log
-
-# ignore windows executables
-*.exe

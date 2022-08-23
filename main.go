@@ -81,6 +81,8 @@ func main() {
 	var domain string
 	var username string
 	var target []string
+	var socksType int
+	var socksAddress string
 
 	if opt.kerberos {
 		Globals.KerberosAuthentication()
@@ -113,8 +115,6 @@ func main() {
 			port = "389"
 		}
 
-		var socksType int
-		var socksAddress string
 		if opt.socks4 != "" {
 			//set socks to socks4
 			socksType = socks.SOCKS4
@@ -223,6 +223,7 @@ func main() {
 					"Commands:\n" +
 					"\taddComputer <computerName$>  (Requires LDAPS)\n" +
 					"\tspn <add/delete> <targetUser> <spn>\n" +
+					"\troast <targetUser>\n" +
 					"Exit:\n" +
 					"\texit"
 				fmt.Println(help)
@@ -347,6 +348,15 @@ func main() {
 
 				Globals.OutputAndLog(opt.logFile, spnLog, 0, 0, 0, false)
 
+			case "roast":
+				if len(userInput) == 1 {
+					fmt.Println("Incorrect number of arguments. Usage: roast <targetUser>")
+					break
+				}
+				roastuser := userInput[1]
+
+				result := Commands.RequestSPN(roastuser, username, opt.password, opt.ntlm, domain, opt.dc, socksAddress, socksType)
+				Globals.OutputAndLog(opt.logFile, result, 0, 0, 0, false)
 			case "mquota":
 				result := Queries.GetMachineQuota(baseDN, conn)
 				Globals.OutputAndLog(opt.logFile, result, 0, 0, 0, false)
