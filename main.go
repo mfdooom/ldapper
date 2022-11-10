@@ -261,6 +261,9 @@ func main() {
 
 				data := Queries.GroupsQuery(arguments, baseDN, conn)
 				Globals.OutputAndLog(opt.logFile, data, 12, 8, 4, false)
+			case "trusts":
+				data := Queries.GetDomainTrusts(baseDN, conn)
+				Globals.OutputAndLog(opt.logFile, data, 0, 8, 0, false)
 
 			case "net":
 				if len(userInput) == 1 {
